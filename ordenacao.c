@@ -14,6 +14,7 @@
 #include <stdio.h>
 
 #define TAM 12        /* quantidade de alunos da turma */
+#define MEDIA 6.0     /* media minima pra aprovacao */
 
 /* contadores pra comparar quanto trabalho cada algoritmo teve */
 int comparacoes = 0;
@@ -147,6 +148,23 @@ int main() {
     printf("Notas ordenadas: ");
     mostrarNotas(copia, TAM);
     printf("Comparacoes: %d | Trocas: %d\n", comparacoes, trocas);
+
+    /* ---- Resumo da turma ----
+       com as notas em ordem, a menor fica na primeira posicao e a maior
+       na ultima. E quem ficou abaixo da media esta todo no comeco do
+       vetor, entao da pra parar de contar assim que achar a primeira
+       nota >= media */
+    printf("\n========== RESUMO DA TURMA ==========\n");
+    printf("Menor nota: %.1f\n", copia[0]);
+    printf("Maior nota: %.1f\n", copia[TAM - 1]);
+
+    int abaixo = 0;
+    while (abaixo < TAM && copia[abaixo] < MEDIA) {
+        abaixo++;
+    }
+    printf("Alunos abaixo da media (%.1f): %d\n", MEDIA, abaixo);
+    printf("Notas em recuperacao: ");
+    mostrarNotas(copia, abaixo);
 
     return 0;
 }

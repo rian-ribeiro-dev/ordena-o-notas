@@ -71,6 +71,52 @@ void bubbleSort(float v[], int n) {
     }
 }
 
+/*
+ * QUICK SORT
+ *
+ * Aqui a ideia e "dividir pra conquistar". Escolho uma nota como pivo
+ * (nesse caso a ultima do trecho) e reorganizo o vetor pra que tudo
+ * que for menor ou igual ao pivo fique a esquerda dele e o que for
+ * maior fique a direita. Isso se chama particionar.
+ *
+ * Depois da particao o pivo ja esta na posicao final dele. Ai e so
+ * repetir a mesma coisa (recursao) com o pedaco da esquerda e com o
+ * pedaco da direita, ate sobrar trechos de 0 ou 1 nota, que ja estao
+ * ordenados por si so.
+ *
+ * Usei o particionamento de Lomuto, que e o mais facil de acompanhar.
+ * Na media o Quick Sort faz por volta de n*log(n) comparacoes, bem
+ * menos que o Bubble quando a lista cresce.
+ */
+
+/* separa as notas em volta do pivo e devolve a posicao final dele */
+int particionar(float v[], int inicio, int fim) {
+    float pivo = v[fim];
+    int i = inicio - 1;   /* ultima posicao da "area dos menores" */
+
+    for (int j = inicio; j < fim; j++) {
+        comparacoes++;
+        if (v[j] <= pivo) {
+            i++;                      /* abre espaco na area dos menores */
+            trocar(&v[i], &v[j]);     /* e coloca essa nota la */
+        }
+    }
+    /* o pivo vai pra logo depois do ultimo menor */
+    trocar(&v[i + 1], &v[fim]);
+    return i + 1;
+}
+
+void quickSort(float v[], int inicio, int fim) {
+    if (inicio < fim) {   /* se tiver 0 ou 1 nota no trecho, para */
+        int p = particionar(v, inicio, fim);
+        printf("  pivo %.1f ficou na posicao %2d: ", v[p], p);
+        mostrarNotas(v, TAM);
+
+        quickSort(v, inicio, p - 1);   /* lado esquerdo (menores) */
+        quickSort(v, p + 1, fim);      /* lado direito (maiores) */
+    }
+}
+
 int main() {
     /* notas na ordem em que foram lancadas no sistema */
     float notas[TAM] = {7.5, 4.0, 9.2, 6.1, 3.5, 8.8,
@@ -87,6 +133,17 @@ int main() {
     comparacoes = 0;
     trocas = 0;
     bubbleSort(copia, TAM);
+    printf("Notas ordenadas: ");
+    mostrarNotas(copia, TAM);
+    printf("Comparacoes: %d | Trocas: %d\n", comparacoes, trocas);
+
+    /* ---- Quick Sort ---- */
+    /* volta pra copia original pra comparacao ser justa */
+    printf("\n========== QUICK SORT ==========\n");
+    copiarNotas(notas, copia, TAM);
+    comparacoes = 0;
+    trocas = 0;
+    quickSort(copia, 0, TAM - 1);
     printf("Notas ordenadas: ");
     mostrarNotas(copia, TAM);
     printf("Comparacoes: %d | Trocas: %d\n", comparacoes, trocas);

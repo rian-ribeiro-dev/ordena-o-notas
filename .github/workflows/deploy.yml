@@ -1,0 +1,80 @@
+# compila e roda o programa a cada push na main
+# e publica a saida numa pagina do GitHub Pages
+name: Build e Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compilar
+        run: gcc -Wall -Wextra -std=c99 -o ordenacao ordenacao.c
+
+      - name: Executar
+        run: ./ordenacao | tee saida.txt
+
+      - name: Gerar pagina
+        run: |
+          mkdir -p site
+          SAIDA=$(sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' saida.txt)
+          CODIGO=$(sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' ordenacao.c)
+          cat > site/index.html <<EOF
+          <!doctype html>
+          <html lang="pt-BR">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title>Ordenação de Notas</title>
+            <style>
+              body { font-family: system-ui, sans-serif; max-width: 900px; margin: 2rem auto; padding: 0 16px; color: #1f2328; background: #fff; }
+              h1 { margin-bottom: .25rem; }
+              p.sub { color: #59636e; margin-top: 0; }
+              pre { background: #0d1117; color: #e6edf3; padding: 1rem; border-radius: 8px; overflow-x: auto; font-size: 14px; line-height: 1.45; }
+              details summary { cursor: pointer; font-weight: 600; margin: 1rem 0 .5rem; }
+              a { color: #0969da; }
+              footer { color: #59636e; font-size: 13px; margin-top: 2rem; }
+            </style>
+          </head>
+          <body>
+            <h1>Ordenação de notas</h1>
+            <p class="sub">Bubble Sort e Quick Sort em C. Esta saída é gerada automaticamente a cada push no repositório.</p>
+            <p>Para rodar você mesmo, copie o código abaixo e cole no <a href="https://www.onlinegdb.com/" target="_blank">OnlineGDB</a> com a linguagem C.</p>
+            <h2>Saída do programa</h2>
+            <pre>${SAIDA}</pre>
+            <details>
+              <summary>Ver o código (ordenacao.c)</summary>
+              <pre>${CODIGO}</pre>
+            </details>
+            <footer>Rian do Nascimento Ribeiro · Engenharia de Software, UDF · versão ${GITHUB_SHA::7}</footer>
+          </body>
+          </html>
+          EOF
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -15,6 +15,10 @@
 
 #define TAM 12        /* quantidade de alunos da turma */
 
+/* contadores pra comparar quanto trabalho cada algoritmo teve */
+int comparacoes = 0;
+int trocas = 0;
+
 /* imprime as notas numa linha so, com uma casa decimal */
 void mostrarNotas(float v[], int n) {
     for (int i = 0; i < n; i++) {
@@ -36,6 +40,35 @@ void trocar(float *a, float *b) {
     float aux = *a;
     *a = *b;
     *b = aux;
+    trocas++;
+}
+
+/*
+ * BUBBLE SORT
+ *
+ * Funciona comparando cada nota com a vizinha da direita. Se a da
+ * esquerda for maior, as duas trocam de lugar. Fazendo isso do comeco
+ * ao fim do vetor, a maior nota vai sendo "empurrada" ate a ultima
+ * posicao, como uma bolha subindo (dai o nome).
+ *
+ * Depois de cada passada a ultima posicao ja esta certa, por isso o
+ * laco de dentro vai ate n - 1 - i: nao precisa comparar de novo o
+ * que ja foi pro lugar.
+ *
+ * E simples de entender, mas faz muitas comparacoes: com n notas sao
+ * n*(n-1)/2, entao o custo cresce na base de n ao quadrado.
+ */
+void bubbleSort(float v[], int n) {
+    for (int i = 0; i < n - 1; i++) {           /* cada volta e uma passada */
+        for (int j = 0; j < n - 1 - i; j++) {   /* compara as vizinhas */
+            comparacoes++;
+            if (v[j] > v[j + 1]) {
+                trocar(&v[j], &v[j + 1]);
+            }
+        }
+        printf("  %2da passada: ", i + 1);
+        mostrarNotas(v, n);
+    }
 }
 
 int main() {
@@ -45,6 +78,18 @@ int main() {
 
     printf("Notas lancadas (antes de ordenar):\n");
     mostrarNotas(notas, TAM);
+
+    float copia[TAM];
+
+    /* ---- Bubble Sort ---- */
+    printf("\n========== BUBBLE SORT ==========\n");
+    copiarNotas(notas, copia, TAM);
+    comparacoes = 0;
+    trocas = 0;
+    bubbleSort(copia, TAM);
+    printf("Notas ordenadas: ");
+    mostrarNotas(copia, TAM);
+    printf("Comparacoes: %d | Trocas: %d\n", comparacoes, trocas);
 
     return 0;
 }
